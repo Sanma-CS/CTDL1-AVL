@@ -2,7 +2,11 @@ package vn.edu.tdt.it.dsa;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 
 public class WarehouseBook {
@@ -50,13 +54,75 @@ public class WarehouseBook {
 		root = null;
 		size = 0;
 	}
-	
-	public WarehouseBook(File file) throws IOException{
+
+	public WarehouseBook(File file) throws IOException {
 		//sinh vien viet ma tai day
+		ArrayList<String> list = new ArrayList<String>();
+		list = convertList(file);
+		root = read(list);
+		//System.out.println(root.getRecord()); 	//debug
+
+	}
+
+	/*
+		get String from input file into a List<String>
+	 */
+	private ArrayList<String> convertList (File file) throws  IOException {
+		Scanner sc = new Scanner(file);
+		String content = sc.useDelimiter("\\A").next();
+		sc.close();
+		String[] cv = content.split("\\s+");
+		ArrayList<String> list = new ArrayList<>(Arrays.asList(cv));
+		//System.out.println(list);	//debug
+		return list;
+
+	}
+
+	/*
+		read list into BSTree
+	 */
+	private WarehouseNode read(ArrayList<String> list) {
+		WarehouseNode p = new WarehouseNode();
+		try {
+			if (list.get(0).equals("N")) {
+				list.remove(0);
+				return null;
+			}
+
+			int id = Integer.parseInt(list.get(0).substring(0,3));
+			//System.out.println(id);		//debug
+			int quantiny = Integer.parseInt(list.get(0).substring(3,5));
+			//System.out.println(quantiny);		//debug
+			ProductRecord pr = new ProductRecord(id, quantiny);
+			p.record = pr;
+
+			list.remove(0);
+
+			if(list.get(0).equals("(")) {
+				list.remove(0);
+				p.left = read(list);
+				p.right = read(list);
+				list.remove(0);
+			}
+			//System.out.println(list);	//debug
+		}
+		catch(IndexOutOfBoundsException exception) {
+			exception.getMessage();
+		}
+		return p;
+
 	}
 	
-	public void save(File file){
+	public void save(File file) throws IOException {
 		//sinh vien viet ma tai day
+		String h = toString();
+		//System.out.println(h);	//debug
+		PrintWriter out = new PrintWriter(file.getPath());
+		out.print(h);
+		out.close();
+
+
+
 	}
 	
 	public void process(File file) throws IOException{
@@ -66,14 +132,42 @@ public class WarehouseBook {
 	public void process(List<String> events){
 		//sinh vien viet ma tai day
 	}
-	
+
+
 	@Override
 	public String toString(){
-		String res = "";
 		//sinh vien viet ma tai day
-		return res;
+		//System.out.println(toString(root));		//debug
+		if (root.record == null)
+			return  null;
+		else
+			return toString(root);
 	}
-	
+
+	private String toString(WarehouseNode p) {
+		String h = "";
+
+		if (p == null) {
+			h += "N";
+		}
+		else {
+			h += p.record.toString();
+
+			if (p.left != null || p.right!= null) {
+				h += " ( ";
+				h += toString(p.left) + " ";
+				h += toString(p.right);
+				h += " )";
+			}
+		}
+
+
+
+		//System.out.println(h + " ) ");		//debug
+		return h;
+
+	}
+
 	public static void main(String[] args){
 		//vi du ham main de chay
 		try{
@@ -83,6 +177,6 @@ public class WarehouseBook {
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
-		
+
 	}
 }
