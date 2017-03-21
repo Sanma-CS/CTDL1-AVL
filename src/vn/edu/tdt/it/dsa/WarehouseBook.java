@@ -44,10 +44,10 @@ public class WarehouseBook {
 	}
 	
 	private WarehouseNode root;
-	private int size;
+	private int size; //have to update
 	
 	public int getSize(){
-		return size;
+		return size;	//have to update later
 	}
 	
 	public WarehouseBook(){
@@ -80,6 +80,7 @@ public class WarehouseBook {
 
 	/*
 		read list into BSTree
+		UPDATE SIZE LATER
 	 */
 	private WarehouseNode read(ArrayList<String> list) {
 		WarehouseNode p = new WarehouseNode();
@@ -125,17 +126,88 @@ public class WarehouseBook {
 
 	}
 	
-	public void process(File file) throws IOException{
+	public void process(File file) throws IOException {
 		//sinh vien viet ma tai day
 	}
 	
-	public void process(List<String> events){
+	public void process(List<String> events) {
 		//sinh vien viet ma tai day
 	}
 
+	/*
+		search key in BST, key is productID
+		public method: from root
+		private method: current WarehouseNode - CAN ONLY USE IN BST
+	 */
+
+	public WarehouseNode search (int key) {
+		return  search(root, key);
+	}
+
+	private WarehouseNode search(WarehouseNode p, int key) {
+		if (p.record == null)
+			return null;
+		else if (key == p.record.getProductID()) {
+			return p;
+		}
+		else if (key < p.record.getProductID()){
+			return search(p.left, key);
+		}
+		else  {
+			return search(p.right, key);
+		}
+	}
+
+	/*
+		add the new node
+		public method: from root
+		private method: return a new WarehouseNode with ID & quanity
+	 */
+
+	public void insert (int ID, int quanity) {
+		root = insert(root, ID, quanity);
+	}
+
+	private WarehouseNode insert (WarehouseNode p, int ID, int quanity) {
+		WarehouseNode n = new WarehouseNode();
+		ProductRecord pr = new ProductRecord(ID, quanity);
+		if (p.record == null) {
+			n.record = pr;
+			return n;
+		}
+		else if (ID == p.record.getProductID()) {
+			return p;
+		}
+		else if (ID < p.record.getProductID()) {
+			p.left = insert(p.left, ID, quanity);
+		}
+		else  {
+			p.right = insert(p.right, ID, quanity);
+		}
+		return  p;
+	}
+
+	/*
+		handle 1st event
+	 */
+
+	public void handle01 (String s) {
+		int id = Integer.parseInt(s.substring(1,4));
+		int quanity = Integer.parseInt(s.substring(4,s.length()));
+		//WarehouseNode p = new WarehouseNode();
+		//System.out.print(id + "\n" + quanity); 	//debug
+
+		if(search(id) == null) {
+			insert(id, quanity);
+		}
+		else {
+			//p = search(id);
+			search(id).record.setQuantity(search(id).record.getQuantity() + quanity);
+		}
+	}
 
 	@Override
-	public String toString(){
+	public String toString() {
 		//sinh vien viet ma tai day
 		//System.out.println(toString(root));		//debug
 		if (root.record == null)
@@ -174,6 +246,9 @@ public class WarehouseBook {
 			WarehouseBook wb = new WarehouseBook(new File("warehouse.txt"));
 			wb.process(new File("events.txt"));
 			wb.save(new File("warehouse_new.txt"));
+
+			//System.out.println(wb.getSize()); 	//debug
+			//wb.handle01("17234"); //debug
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
