@@ -145,7 +145,7 @@ public class WarehouseBook {
 	}
 
 	private WarehouseNode search(WarehouseNode p, int key) {
-		if (p.record == null)
+		if (p.getRecord() == null)
 			return null;
 		else if (key == p.record.getProductID()) {
 			return p;
@@ -164,27 +164,27 @@ public class WarehouseBook {
 		private method: return a new WarehouseNode with ID & quanity
 	 */
 
-	public void insert (int ID, int quanity) {
-		root = insert(root, ID, quanity);
+	public void insert (ProductRecord pr) {
+		root = insert(root, pr);
 	}
 
-	private WarehouseNode insert (WarehouseNode p, int ID, int quanity) {
-		WarehouseNode n = new WarehouseNode();
-		ProductRecord pr = new ProductRecord(ID, quanity);
-		if (p.record == null) {
-			n.record = pr;
+	private WarehouseNode insert (WarehouseNode p, ProductRecord pr) {
+		//WarehouseNode n = new WarehouseNode();
+		if (p == null) {
+			WarehouseNode n = new WarehouseNode();
+			n.setRecord(pr);
 			return n;
 		}
-		else if (ID == p.record.getProductID()) {
+		else if (pr.getProductID() == p.record.getProductID()) {
 			return p;
 		}
-		else if (ID < p.record.getProductID()) {
-			p.left = insert(p.left, ID, quanity);
+		else if (pr.getProductID() < p.record.getProductID()) {
+			p.left = insert(p.left, pr);
 		}
 		else  {
-			p.right = insert(p.right, ID, quanity);
+			p.right = insert(p.right, pr);
 		}
-		return  p;
+		return p;
 	}
 
 	/*
@@ -194,11 +194,12 @@ public class WarehouseBook {
 	public void handle01 (String s) {
 		int id = Integer.parseInt(s.substring(1,4));
 		int quanity = Integer.parseInt(s.substring(4,s.length()));
+		ProductRecord pr = new ProductRecord(id, quanity);
 		//WarehouseNode p = new WarehouseNode();
-		//System.out.print(id + "\n" + quanity); 	//debug
+		System.out.print(id + "\n" + quanity); 	//debug
 
 		if(search(id) == null) {
-			insert(id, quanity);
+			insert(pr);
 		}
 		else {
 			//p = search(id);
@@ -248,7 +249,7 @@ public class WarehouseBook {
 			wb.save(new File("warehouse_new.txt"));
 
 			//System.out.println(wb.getSize()); 	//debug
-			//wb.handle01("17234"); //debug
+			//wb.handle01(""); //debug
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
