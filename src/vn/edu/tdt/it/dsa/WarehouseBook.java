@@ -11,13 +11,13 @@ import java.util.Scanner;
 
 
 public class WarehouseBook {
-	
+
 	protected static class WarehouseNode {
 		private ProductRecord record;
 		private WarehouseNode left, right;
-		private int balance; 
-		
-		
+		private int balance;
+
+
 		public ProductRecord getRecord() {
 			return record;
 		}
@@ -43,14 +43,14 @@ public class WarehouseBook {
 			this.balance = balance;
 		}
 	}
-	
+
 	private WarehouseNode root;
 	private int size; //have to update
-	
+
 	public int getSize(){
 		return size;	//have to update later
 	}
-	
+
 	public WarehouseBook(){
 		root = null;
 		size = 0;
@@ -123,7 +123,7 @@ public class WarehouseBook {
 		return p;
 
 	}
-	
+
 	public void save(File file) throws IOException {
 		//sinh vien viet ma tai day
 		String h = toString();
@@ -135,11 +135,11 @@ public class WarehouseBook {
 
 
 	}
-	
+
 	public void process(File file) throws IOException {
 		//sinh vien viet ma tai day
 	}
-	
+
 	public void process(List<String> events) {
 		//sinh vien viet ma tai day
 	}
@@ -157,10 +157,10 @@ public class WarehouseBook {
 	private WarehouseNode search(WarehouseNode p, int key) {
 		if (p.getRecord() == null)
 			return null;
-		else if (key == p.record.getProductID()) {
+		else if (key == p.getRecord().getProductID()) {
 			return p;
 		}
-		else if (key < p.record.getProductID()){
+		else if (key < p.getRecord().getProductID()){
 			return search(p.left, key);
 		}
 		else  {
@@ -185,10 +185,10 @@ public class WarehouseBook {
 			n.setRecord(pr);
 			return n;
 		}
-		else if (pr.getProductID() == p.record.getProductID()) {
+		else if (pr.getProductID() == p.getRecord().getProductID()) {
 			return p;
 		}
-		else if (pr.getProductID() < p.record.getProductID()) {
+		else if (pr.getProductID() < p.getRecord().getProductID()) {
 			p.left = insert(p.left, pr);
 		}
 		else  {
@@ -196,6 +196,49 @@ public class WarehouseBook {
 		}
 		return p;
 	}
+
+	/*
+		delete
+	 */
+
+	public  void delete(ProductRecord check) {
+		root = delete(root, check);
+	}
+
+	private WarehouseNode delete(WarehouseNode p, ProductRecord check) {
+
+		if (p == null) throw new RuntimeException();
+		else if (check.getProductID() < p.getRecord().getProductID()) {
+			p.left = delete(p.left, check);
+		}
+		else if (check.getProductID() > p.getRecord().getProductID()) {
+			p.right = delete(p.right, check);
+		}
+		else {
+			if (p.left == null)
+				return p.getRight();
+			else if (p.right == null)
+				return  p.getLeft();
+			else {
+				// get data from the rightmost node in the left subtree
+				p.record = retrieveData(p.left);
+				//delete the rightmost node in the left subtree
+				p.left = delete(p.left, p.getRecord());
+ 			}
+		}
+		return  p;
+	}
+
+	private ProductRecord retrieveData (WarehouseNode p) {
+		while (p.right != null)
+			p = p.right;
+		return  p.getRecord();
+	}
+
+	/*
+			
+	 */
+
 
 	/*
 		handle 1st event
@@ -213,7 +256,7 @@ public class WarehouseBook {
 		}
 		else {
 			//p = search(id);
-			search(id).record.setQuantity(search(id).record.getQuantity() + quanity);
+			search(id).getRecord().setQuantity(search(id).getRecord().getQuantity() + quanity);
 		}
 	}
 
@@ -221,7 +264,7 @@ public class WarehouseBook {
 	public String toString() {
 		//sinh vien viet ma tai day
 		//System.out.println(toString(root));		//debug
-		if (root.record == null)
+		if (root.getRecord() == null)
 			return  null;
 		else
 			return toString(root);
@@ -234,7 +277,7 @@ public class WarehouseBook {
 			h += "N";
 		}
 		else {
-			h += p.record.toString();
+			h += p.getRecord().toString();
 
 			if (p.left != null || p.right!= null) {
 				h += " ( ";
