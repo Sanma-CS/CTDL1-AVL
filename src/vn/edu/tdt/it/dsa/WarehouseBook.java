@@ -3,6 +3,7 @@ package vn.edu.tdt.it.dsa;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -69,13 +70,22 @@ public class WarehouseBook {
 	 */
 	private ArrayList<String> convertList (File file) throws  IOException {
 		Scanner sc = new Scanner(file);
-		String content = sc.useDelimiter("\\A").next();
+		String content = sc.nextLine().replaceAll("\\s*[N]\\s*"," N ")
+				.replaceAll("\\s*[(]\\s*"," ( ").replaceAll("\\s*[)]\\s*"," ) ");
 		sc.close();
-		String[] cv = content.split("\\s+");
-		ArrayList<String> list = new ArrayList<>(Arrays.asList(cv));
-		//System.out.println(list);	//debug
-		return list;
+		ArrayList<String> list = new ArrayList<>(Arrays.asList(content.split("\\s+")));
+		ArrayList<String> result = new ArrayList<>();
 
+		for (String item : list) {
+			if (item.length() <= 5) {
+				result.add(item);
+			} else if (item.length() == 10) {
+				result.add(item.substring(0,5));
+				result.add(item.substring(5,item.length()));
+			} else throw new IOException("Unknown input format");
+		}
+		//System.out.println(list);	//debug
+		return result;
 	}
 
 	/*
@@ -245,7 +255,7 @@ public class WarehouseBook {
 		//vi du ham main de chay
 		try{
 			WarehouseBook wb = new WarehouseBook(new File("warehouse.txt"));
-			wb.process(new File("events.txt"));
+//			wb.process(new File("events.txt"));
 			wb.save(new File("warehouse_new.txt"));
 
 			//System.out.println(wb.getSize()); 	//debug
