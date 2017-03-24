@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Stack;
 
 
 public class WarehouseBook {
@@ -201,8 +202,8 @@ public class WarehouseBook {
 		delete
 	 */
 
-	public  void delete(ProductRecord check) {
-		root = delete(root, check);
+	public  void delete(ProductRecord key) {
+		root = delete(root, key);
 	}
 
 	private WarehouseNode delete(WarehouseNode p, ProductRecord check) {
@@ -236,15 +237,53 @@ public class WarehouseBook {
 	}
 
 	/*
-			
+		search02
+		inorder traversal
+		using stack: min -> max
+		return the most truenode
+		>>> use it for the 2nd event.
 	 */
 
+	private WarehouseNode search02 (ProductRecord pr) {
+		if (root == null)
+			return  null;
+
+		WarehouseNode node = root;
+		Stack<WarehouseNode> s = new Stack<WarehouseNode>();
+		WarehouseNode min = new WarehouseNode();
+		//min.record = pr;
+		//int minVal = Math.abs(root.getRecord().getProductID() - pr.getProductID());
+		int minVal = 1000;
+
+		while(node!=null) {
+			s.push(node);
+			node = node.left;
+		}
+
+		while (s.size() > 0) {
+			node = s.pop();
+			if (Math.abs(node.getRecord().getProductID() - pr.getProductID()) < minVal) {
+				min = node;
+				minVal = Math.abs(node.getRecord().getProductID() - pr.getProductID());
+
+			}
+			if (node.right != null) {
+				node = node.right;
+				while (node != null) {
+					s.push(node);
+					node = node.left;
+				}
+			}
+		}
+		return  min;
+
+	}
 
 	/*
 		handle 1st event
 	 */
 
-	public void handle01 (String s) {
+	public void handle01 (String s) { 	//1XXXY
 		int id = Integer.parseInt(s.substring(1,4));
 		int quanity = Integer.parseInt(s.substring(4,s.length()));
 		ProductRecord pr = new ProductRecord(id, quanity);
@@ -258,6 +297,25 @@ public class WarehouseBook {
 			//p = search(id);
 			search(id).getRecord().setQuantity(search(id).getRecord().getQuantity() + quanity);
 		}
+	}
+
+	/*
+		handle 2nd event
+	 */
+
+	public void handle02 (String s) { 	//2XXXY
+		int id = Integer.parseInt(s.substring(1,4));
+		int quanity = Integer.parseInt(s.substring(4,s.length()));
+		ProductRecord check = new ProductRecord(id, quanity);
+
+		//WarehouseNode p = search02(check);
+		if ((search02(check).getRecord().getQuantity() - check.getQuantity()) <= 0) {
+			delete(search02(check).getRecord());
+		}
+		else {
+			search02(check).getRecord().setQuantity(search02(check).getRecord().getQuantity() - check.getQuantity());
+		}
+
 	}
 
 	@Override
