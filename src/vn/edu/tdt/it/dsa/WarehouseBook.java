@@ -308,13 +308,17 @@ public class WarehouseBook {
 		int quanity = Integer.parseInt(s.substring(4,s.length()));
 		ProductRecord check = new ProductRecord(id, quanity);
 
-		//WarehouseNode p = search02(check);
-		if ((search02(check).getRecord().getQuantity() - check.getQuantity()) <= 0) {
-			delete(search02(check).getRecord());
-		}
+		WarehouseNode p = search02(check);
+		if (p == null) throw new NullPointerException();
 		else {
-			search02(check).getRecord().setQuantity(search02(check).getRecord().getQuantity() - check.getQuantity());
+			if ((p.getRecord().getQuantity() - check.getQuantity()) <= 0) {
+				delete(p.getRecord());
+			}
+			else {
+				p.getRecord().setQuantity(p.getRecord().getQuantity() - check.getQuantity());
+			}
 		}
+
 
 	}
 
@@ -323,7 +327,7 @@ public class WarehouseBook {
 		//sinh vien viet ma tai day
 		//System.out.println(toString(root));		//debug
 		if (root.getRecord() == null)
-			return  null;
+			return  "";
 		else
 			return toString(root);
 	}
