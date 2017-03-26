@@ -3,12 +3,12 @@ package vn.edu.tdt.it.dsa;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
-import java.util.Stack;
+
+import static java.lang.Math.abs;
 
 
 public class WarehouseBook {
@@ -46,30 +46,28 @@ public class WarehouseBook {
 	}
 
 	private WarehouseNode root;
-	private int size; //have to update
 
-	public int getSize(){
-		return size;	//have to update later
+	private int size;
+
+    public int getSize(){
+		return size;
 	}
 
-	public WarehouseBook(){
+    public WarehouseBook(){
 		root = null;
 		size = 0;
 	}
 
 	public WarehouseBook(File file) throws IOException {
-		//sinh vien viet ma tai day
-		ArrayList<String> list = new ArrayList<String>();
-		list = convertList(file);
-		root = read(list);
-		//System.out.println(root.getRecord()); 	//debug
-
+		ArrayList<String> list;
+		list = toList(file);
+		root = readList(list);
 	}
 
 	/*
 		get String from input file into a List<String>
 	 */
-	private ArrayList<String> convertList (File file) throws  IOException {
+	private ArrayList<String> toList(File file) throws  IOException {
 		Scanner sc = new Scanner(file);
 		String content = sc.nextLine().replaceAll("\\s*[N]\\s*"," N ")
 				.replaceAll("\\s*[(]\\s*"," ( ").replaceAll("\\s*[)]\\s*"," ) ");
@@ -85,7 +83,6 @@ public class WarehouseBook {
 				result.add(item.substring(5,item.length()));
 			} else throw new IOException("Unknown input format");
 		}
-		//System.out.println(list);	//debug
 		return result;
 	}
 
@@ -93,7 +90,7 @@ public class WarehouseBook {
 		read list into BSTree
 		UPDATE SIZE LATER
 	 */
-	private WarehouseNode read(ArrayList<String> list) {
+	private WarehouseNode readList(ArrayList<String> list) {
 		WarehouseNode p = new WarehouseNode();
 		try {
 			if (list.get(0).equals("N")) {
@@ -101,22 +98,17 @@ public class WarehouseBook {
 				return null;
 			}
 
-			int id = Integer.parseInt(list.get(0).substring(0,3));
-			//System.out.println(id);		//debug
-			int quantiny = Integer.parseInt(list.get(0).substring(3,5));
-			//System.out.println(quantiny);		//debug
-			ProductRecord pr = new ProductRecord(id, quantiny);
-			p.record = pr;
+			p.setRecord(new ProductRecord(Integer.parseInt(list.get(0).substring(0,3)),
+                    Integer.parseInt(list.get(0).substring(3,5))));
 
 			list.remove(0);
 
 			if(list.get(0).equals("(")) {
 				list.remove(0);
-				p.left = read(list);
-				p.right = read(list);
+				p.setLeft(readList(list));
+				p.setRight(readList(list));
 				list.remove(0);
 			}
-			//System.out.println(list);	//debug
 		}
 		catch(IndexOutOfBoundsException exception) {
 			exception.getMessage();
@@ -132,17 +124,27 @@ public class WarehouseBook {
 		PrintWriter out = new PrintWriter(file.getPath());
 		out.print(h);
 		out.close();
-
-
-
 	}
 
 	public void process(File file) throws IOException {
-		//sinh vien viet ma tai day
+        process(toList(file));
 	}
 
 	public void process(List<String> events) {
-		//sinh vien viet ma tai day
+        for (String event : events) {
+            switch (event.charAt(0)) {
+                case '0':
+                    return;
+                case '1':
+                    handle01(event);
+                    break;
+                case '2':
+                    handle02(event);
+                    break;
+                default:
+                    return;
+            }
+        }
 	}
 
 	/*
@@ -150,7 +152,6 @@ public class WarehouseBook {
 		public method: from root
 		private method: current WarehouseNode - CAN ONLY USE IN BST
 	 */
-
 	public WarehouseNode search (int key) {
 		return  search(root, key);
 	}
@@ -162,10 +163,10 @@ public class WarehouseBook {
 			return p;
 		}
 		else if (key < p.getRecord().getProductID()){
-			return search(p.left, key);
+			return search(p.getLeft(), key);
 		}
 		else  {
-			return search(p.right, key);
+			return search(p.getRight(), key);
 		}
 	}
 
@@ -190,142 +191,75 @@ public class WarehouseBook {
 			return p;
 		}
 		else if (pr.getProductID() < p.getRecord().getProductID()) {
-			p.left = insert(p.left, pr);
+			p.setLeft(insert(p.getLeft(), pr));
 		}
 		else  {
-			p.right = insert(p.right, pr);
+			p.setRight(insert(p.getRight(), pr));
 		}
 		return p;
 	}
 
-	/*
-		delete
-	 */
+	public void delete(ProductRecord key) {
+        root = delete(root, key, 1000);
+    }
 
-	public  void delete(ProductRecord key) {
-		root = delete(root, key);
-	}
-
-	private WarehouseNode delete(WarehouseNode p, ProductRecord check) {
+	private WarehouseNode delete(WarehouseNode p, ProductRecord check, int minVal) {
 
 		if (p == null) throw new RuntimeException();
-		else if (check.getProductID() < p.getRecord().getProductID()) {
-			p.left = delete(p.left, check);
+		else if (check.getProductID() < p.getRecord().getProductID() && abs(check.getProductID() - p.getRecord().getProductID()) < minVal) {
+            minVal = abs(check.getProductID() - p.getRecord().getProductID());
+			p.setLeft(delete(p.getLeft(), check, minVal));
 		}
-		else if (check.getProductID() > p.getRecord().getProductID()) {
-			p.right = delete(p.right, check);
+		else if (check.getProductID() > p.getRecord().getProductID() && abs(check.getProductID() - p.getRecord().getProductID()) < minVal) {
+            minVal = abs(check.getProductID() - p.getRecord().getProductID());
+			p.setRight(delete(p.getRight(), check, minVal));
 		}
 		else {
-			if (p.left == null)
+			if (p.getLeft() == null)
 				return p.getRight();
-			else if (p.right == null)
+			else if (p.getRight() == null)
 				return  p.getLeft();
 			else {
 				// get data from the rightmost node in the left subtree
-				p.record = retrieveData(p.left);
+				p.record = retrieveData(p.getLeft());
 				//delete the rightmost node in the left subtree
-				p.left = delete(p.left, p.getRecord());
+                p.setLeft(delete(p.getLeft(), p.getRecord(), minVal));
  			}
 		}
 		return  p;
 	}
 
 	private ProductRecord retrieveData (WarehouseNode p) {
-		while (p.right != null)
-			p = p.right;
+		while (p.getRight() != null)
+			p = p.getRight();
 		return  p.getRecord();
-	}
-
-	/*
-		search02
-		inorder traversal
-		using stack: min -> max
-		return the most truenode
-		>>> use it for the 2nd event.
-	 */
-
-	private WarehouseNode search02 (ProductRecord pr) {
-		if (root == null)
-			return  null;
-
-		WarehouseNode node = root;
-		Stack<WarehouseNode> s = new Stack<WarehouseNode>();
-		WarehouseNode min = new WarehouseNode();
-		//min.record = pr;
-		//int minVal = Math.abs(root.getRecord().getProductID() - pr.getProductID());
-		int minVal = 1000;
-
-		while(node!=null) {
-			s.push(node);
-			node = node.left;
-		}
-
-		while (s.size() > 0) {
-			node = s.pop();
-			if (Math.abs(node.getRecord().getProductID() - pr.getProductID()) < minVal) {
-				min = node;
-				minVal = Math.abs(node.getRecord().getProductID() - pr.getProductID());
-
-			}
-			if (node.right != null) {
-				node = node.right;
-				while (node != null) {
-					s.push(node);
-					node = node.left;
-				}
-			}
-		}
-		return  min;
-
 	}
 
 	/*
 		handle 1st event
 	 */
 
-	public void handle01 (String s) { 	//1XXXY
-		int id = Integer.parseInt(s.substring(1,4));
-		int quanity = Integer.parseInt(s.substring(4,s.length()));
-		ProductRecord pr = new ProductRecord(id, quanity);
-		//WarehouseNode p = new WarehouseNode();
-		System.out.print(id + "\n" + quanity); 	//debug
+	public void handle01 (String s) {
+		ProductRecord pr = new ProductRecord(Integer.parseInt(s.substring(1,4)),
+                Integer.parseInt(s.substring(4,s.length())));
 
-		if(search(id) == null) {
+		if(search(pr.getProductID()) == null) {
 			insert(pr);
 		}
 		else {
-			//p = search(id);
-			search(id).getRecord().setQuantity(search(id).getRecord().getQuantity() + quanity);
+			search(pr.getProductID()).getRecord().setQuantity(
+			        search(pr.getProductID()).getRecord().getQuantity() +
+                    pr.getQuantity());
 		}
 	}
 
-	/*
-		handle 2nd event
-	 */
-
-	public void handle02 (String s) { 	//2XXXY
-		int id = Integer.parseInt(s.substring(1,4));
-		int quanity = Integer.parseInt(s.substring(4,s.length()));
-		ProductRecord check = new ProductRecord(id, quanity);
-
-		WarehouseNode p = search02(check);
-		if (p == null) throw new NullPointerException();
-		else {
-			if ((p.getRecord().getQuantity() - check.getQuantity()) <= 0) {
-				delete(p.getRecord());
-			}
-			else {
-				p.getRecord().setQuantity(p.getRecord().getQuantity() - check.getQuantity());
-			}
-		}
-
-
+	public void handle02 (String s) {
+		delete(new ProductRecord(Integer.parseInt(s.substring(1,4)),
+                Integer.parseInt(s.substring(4,s.length()))));
 	}
 
 	@Override
 	public String toString() {
-		//sinh vien viet ma tai day
-		//System.out.println(toString(root));		//debug
 		if (root.getRecord() == null)
 			return  "";
 		else
@@ -341,33 +275,24 @@ public class WarehouseBook {
 		else {
 			h += p.getRecord().toString();
 
-			if (p.left != null || p.right!= null) {
+			if (p.getLeft() != null || p.getRight()!= null) {
 				h += " ( ";
-				h += toString(p.left) + " ";
-				h += toString(p.right);
+				h += toString(p.getLeft()) + " ";
+				h += toString(p.getRight());
 				h += " )";
 			}
 		}
-
-
-
-		//System.out.println(h + " ) ");		//debug
 		return h;
 
 	}
 
 	public static void main(String[] args){
-		//vi du ham main de chay
 		try{
 			WarehouseBook wb = new WarehouseBook(new File("warehouse.txt"));
-//			wb.process(new File("events.txt"));
+			wb.process(new File("events.txt"));
 			wb.save(new File("warehouse_new.txt"));
-
-			//System.out.println(wb.getSize()); 	//debug
-			//wb.handle01(""); //debug
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
-
 	}
 }
