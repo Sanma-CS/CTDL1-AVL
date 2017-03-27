@@ -175,11 +175,11 @@ public class WarehouseBook {
 		private method: return a new WarehouseNode with ID & quanity
 	 */
 
-	public void insert (ProductRecord pr) {
-		root = insert(root, pr);
+	public void insert (ProductRecord pr, boolean flag) {
+		root = insert(root, pr, flag);
 	}
 
-	private WarehouseNode insert (WarehouseNode p, ProductRecord pr) {
+	private WarehouseNode insert (WarehouseNode p, ProductRecord pr, boolean flag) {
 		//WarehouseNode n = new WarehouseNode();
 		if (p == null) {
 			WarehouseNode n = new WarehouseNode();
@@ -190,12 +190,15 @@ public class WarehouseBook {
 			return p;
 		}
 		else if (pr.getProductID() < p.getRecord().getProductID()) {
-			p.left = insert(p.left, pr);
+			p.left = insert(p.left, pr, flag);
 		}
 		else  {
-			p.right = insert(p.right, pr);
+			p.right = insert(p.right, pr, flag);
 		}
-		return p;
+		if (!flag)
+			return p;
+		else
+			return balance(p);
 	}
 
 	/*
@@ -279,6 +282,75 @@ public class WarehouseBook {
 
 	}
 
+
+	/*
+			getDepth()
+	 */
+
+	private int getDepth(WarehouseNode p, int level) {
+		if (p == null)
+			return 0;
+
+		int downlevel = getDepth(p.left,  level + 1);
+		if (downlevel != 0)
+			return downlevel + 1;
+
+		downlevel = getDepth(p.right, level+1);
+		return  downlevel + 1;
+	}
+
+	public  int getDepth(WarehouseNode p) {
+		return  getDepth(p, 1);
+	}
+
+	/*
+		balanceFactor
+	 */
+
+	private int balanceFactor(WarehouseNode p) {
+		p.setBalance(getDepth(p.left) - getDepth(p.right));
+		return p.getBalance();
+	}
+
+	/*
+		rotate right & left
+	 */
+
+	private WarehouseNode rotateRight(WarehouseNode p) {
+		WarehouseNode g = p.left;
+		p.left = g.right;
+		g.right = p;
+		return g;
+	}
+
+	private WarehouseNode rotateLeft(WarehouseNode p) {
+		WarehouseNode g = p.right;
+		p.right = g.left;
+		g.left = p;
+		return g;
+
+	}
+
+	/*
+		balance
+	 */
+	private WarehouseNode balance(WarehouseNode p) {
+		//p.setBalance(balanceFactor(p));
+		if (balanceFactor(p) < -1) {
+			if (balanceFactor(p.right) > 0) {
+				p.right = rotateRight(p.right);
+			}
+			p = rotateLeft(p);
+		}
+		else if (balanceFactor(p) > 1) {
+			if(balanceFactor(p.left) < 0) {
+				p.left = rotateLeft(p.left);
+			}
+			p = rotateRight(p);
+		}
+		return p;
+	}
+
 	/*
 		handle 1st event
 	 */
@@ -291,7 +363,7 @@ public class WarehouseBook {
 		System.out.print(id + "\n" + quanity); 	//debug
 
 		if(search(id) == null) {
-			insert(pr);
+			insert(pr, false);
 		}
 		else {
 			//p = search(id);
@@ -363,7 +435,7 @@ public class WarehouseBook {
 //			wb.process(new File("events.txt"));
 			wb.save(new File("warehouse_new.txt"));
 
-			//System.out.println(wb.getSize()); 	//debug
+			//System.out.println(wb.getDepth()); 	//debug
 			//wb.handle01(""); //debug
 		}catch(Exception ex){
 			ex.printStackTrace();
