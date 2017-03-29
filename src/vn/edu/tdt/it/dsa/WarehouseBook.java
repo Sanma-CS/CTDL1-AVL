@@ -3,12 +3,13 @@ package vn.edu.tdt.it.dsa;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.reflect.Array;
+//import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Stack;
+import java.util.Objects;
 
 
 public class WarehouseBook {
@@ -156,7 +157,7 @@ public class WarehouseBook {
 	}
 
 	private WarehouseNode search(WarehouseNode p, int key) {
-		if (p.getRecord() == null)
+		if (p == null)
 			return null;
 		else if (key == p.getRecord().getProductID()) {
 			return p;
@@ -284,23 +285,23 @@ public class WarehouseBook {
 
 
 	/*
-			getDepth()
+			getHeight()
 	 */
 
-	private int getDepth(WarehouseNode p, int level) {
+	private int getHeight(WarehouseNode p, int level) {
 		if (p == null)
 			return 0;
 
-		int downlevel = getDepth(p.left,  level + 1);
-		if (downlevel != 0)
-			return downlevel + 1;
+		int uplevel = getHeight(p.left,  level + 1);
+		if (uplevel != 0)
+			return uplevel + 1;
 
-		downlevel = getDepth(p.right, level+1);
-		return  downlevel + 1;
+		uplevel = getHeight(p.right, level+1);
+		return  uplevel + 1;
 	}
 
-	public  int getDepth(WarehouseNode p) {
-		return  getDepth(p, 1);
+	public  int getHeight(WarehouseNode p) {
+		return  getHeight(p, 1);
 	}
 
 	/*
@@ -308,7 +309,7 @@ public class WarehouseBook {
 	 */
 
 	private int balanceFactor(WarehouseNode p) {
-		p.setBalance(getDepth(p.left) - getDepth(p.right));
+		p.setBalance(getHeight(p.left) - getHeight(p.right));
 		return p.getBalance();
 	}
 
@@ -347,6 +348,40 @@ public class WarehouseBook {
 				p.left = rotateLeft(p.left);
 			}
 			p = rotateRight(p);
+		}
+		return p;
+	}
+
+	/*
+		GET depth
+	 */
+
+	private int getDepth(WarehouseNode p, ProductRecord pr, int level) {
+		if (p == null)
+			return 0;
+		if ((Objects.equals(p.getRecord().toString(), pr.toString())))
+			return level;
+		int downlevel = getDepth(p.left, pr, level + 1);
+		if (downlevel != 0)
+			return downlevel;
+		downlevel = getDepth(p.right, pr, level + 1);
+		return downlevel;
+	}
+	public int getDepth(WarehouseNode p, ProductRecord pr) {
+		return getDepth(p, pr,1);
+	}
+	/*
+		search03
+	 */
+	private WarehouseNode search03(WarehouseNode p, int key) {
+		if (p == null)
+			return null;
+		else if (getDepth(p, p.getRecord()) >= key)
+			return p;
+		else {
+			search03(p.left, key);
+			search03(p.right, key);
+
 		}
 		return p;
 	}
@@ -394,11 +429,28 @@ public class WarehouseBook {
 
 	}
 
+	/*
+		handle 6th event
+
+	 */
+
+	public void handle06 (String s) {
+		int depth = Integer.parseInt(s.substring(1,s.length()));
+		if (depth == 0)
+			root = null;
+		else {
+			WarehouseNode p;
+			while((p = search03(root,depth)) != null)
+				delete(p.getRecord());
+		}
+
+	}
+
 	@Override
 	public String toString() {
 		//sinh vien viet ma tai day
 		//System.out.println(toString(root));		//debug
-		if (root.getRecord() == null)
+		if (root == null)
 			return  "";
 		else
 			return toString(root);
@@ -433,9 +485,10 @@ public class WarehouseBook {
 		try{
 			WarehouseBook wb = new WarehouseBook(new File("warehouse.txt"));
 //			wb.process(new File("events.txt"));
+			wb.handle06("63");
 			wb.save(new File("warehouse_new.txt"));
 
-			//System.out.println(wb.getDepth()); 	//debug
+			//System.out.println(wb.getHeight(wb.root)); 	//debug
 			//wb.handle01(""); //debug
 		}catch(Exception ex){
 			ex.printStackTrace();
