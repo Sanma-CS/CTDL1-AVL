@@ -410,6 +410,21 @@ public class WarehouseBook {
 	}
 
 	/*
+		Precedence WareHouseNode
+		setToRoot()
+		for handling 5th event
+
+	 */
+
+	private void setToRoot(ProductRecord pr, ArrayList<WarehouseNode> arr) {
+		for (int i = 0; i < arr.size(); i++) {
+			if (arr.get(i).getRecord().getProductID() == pr.getProductID())
+				pr.setQuantity(pr.getQuantity() + arr.get(i).getRecord().getQuantity());
+		}
+		root.setRecord(pr);
+	}
+
+	/*
 		handle 1st event
 	 */
 
@@ -504,9 +519,9 @@ public class WarehouseBook {
 		//vi du ham main de chay
 		try{
 			WarehouseBook wb = new WarehouseBook(new File("warehouse.txt"));
-//			wb.process(new File("events.txt"));
-			//System.out.print(wb.getDepth(wb.root.left.left.getRecord()));
-			wb.handle06("63");
+			wb.process(new File("events.txt"));
+			//System.out.print(wb.getDepth(wb.root.left.getRecord()));		//debug
+			//wb.handle06("63");		//debug
 			wb.save(new File("warehouse_new.txt"));
 
 			//System.out.println(wb.getHeight(wb.root)); 	//debug
