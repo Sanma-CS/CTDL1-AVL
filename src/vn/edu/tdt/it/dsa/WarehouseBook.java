@@ -359,7 +359,7 @@ public class WarehouseBook {
 	private int getDepth(WarehouseNode p, ProductRecord pr, int level) {
 		if (p == null)
 			return 0;
-		if ((Objects.equals(p.getRecord().toString(), pr.toString())))
+		if (p.getRecord() == pr) //updating: (Objects.equals(p.getRecord().toString(), pr.toString()))
 			return level;
 		int downlevel = getDepth(p.left, pr, level + 1);
 		if (downlevel != 0)
@@ -367,23 +367,46 @@ public class WarehouseBook {
 		downlevel = getDepth(p.right, pr, level + 1);
 		return downlevel;
 	}
-	public int getDepth(WarehouseNode p, ProductRecord pr) {
-		return getDepth(p, pr,1);
+	public int getDepth(ProductRecord pr) {
+		return getDepth(root, pr,1);
 	}
 	/*
 		search03
-	 */
-	private WarehouseNode search03(WarehouseNode p, int key) {
+
+			private WarehouseNode search03(WarehouseNode p, int key) {
 		if (p == null)
 			return null;
-		else if (getDepth(p, p.getRecord()) >= key)
+		if (getDepth(p.getRecord()) >= key)
 			return p;
 		else {
-			search03(p.left, key);
-			search03(p.right, key);
-
+			//WarehouseNode t = search(p.right, key);
+			if (p.left == null)
+				return search03(p.right, key);
+			return search03(p.left, key);
 		}
-		return p;
+	}
+	 */
+	/*
+		delete01
+		delete all node has depth >= check
+	*/
+	private WarehouseNode delete01(WarehouseNode p, int check) {
+
+		if (p == null)
+			return null;
+		if (getDepth(p.getRecord()) >= check)
+			p = null;
+		else {
+			// get data from the rightmost node in the left subtree
+			//p.record = retrieveData(p.left);
+			p.left = delete01(p.left, check);
+			p.right = delete01(p.right, check);
+		}
+		return  p;
+	}
+
+	public  void delete01(int key) {
+		root = delete01(root, key);
 	}
 
 	/*
@@ -438,12 +461,9 @@ public class WarehouseBook {
 		int depth = Integer.parseInt(s.substring(1,s.length()));
 		if (depth == 0)
 			root = null;
-		else {
-			WarehouseNode p;
-			while((p = search03(root,depth)) != null)
-				delete(p.getRecord());
-		}
-
+		else
+			delete01(depth);
+			//System.out.println(p.record.toString());
 	}
 
 	@Override
@@ -466,10 +486,10 @@ public class WarehouseBook {
 			h += p.getRecord().toString();
 
 			if (p.left != null || p.right!= null) {
-				h += " ( ";
+				h += " (";
 				h += toString(p.left) + " ";
 				h += toString(p.right);
-				h += " )";
+				h += ")";
 			}
 		}
 
@@ -485,6 +505,7 @@ public class WarehouseBook {
 		try{
 			WarehouseBook wb = new WarehouseBook(new File("warehouse.txt"));
 //			wb.process(new File("events.txt"));
+			//System.out.print(wb.getDepth(wb.root.left.left.getRecord()));
 			wb.handle06("63");
 			wb.save(new File("warehouse_new.txt"));
 
