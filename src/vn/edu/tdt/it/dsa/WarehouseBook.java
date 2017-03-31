@@ -3,13 +3,13 @@ package vn.edu.tdt.it.dsa;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-//import java.lang.reflect.Array;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Stack;
-import java.util.Objects;
+//import java.util.Objects;
 
 
 public class WarehouseBook {
@@ -197,9 +197,9 @@ public class WarehouseBook {
 			p.right = insert(p.right, pr, flag);
 		}
 		if (!flag)
-			return p;
+			return p;	//inset BST
 		else
-			return balance(p);
+			return balance(p); //inset AVL
 	}
 
 	/*
@@ -370,26 +370,12 @@ public class WarehouseBook {
 	public int getDepth(ProductRecord pr) {
 		return getDepth(root, pr,1);
 	}
-	/*
-		search03
 
-			private WarehouseNode search03(WarehouseNode p, int key) {
-		if (p == null)
-			return null;
-		if (getDepth(p.getRecord()) >= key)
-			return p;
-		else {
-			//WarehouseNode t = search(p.right, key);
-			if (p.left == null)
-				return search03(p.right, key);
-			return search03(p.left, key);
-		}
-	}
-	 */
 	/*
 		delete01
 		delete all node has depth >= check
 	*/
+
 	private WarehouseNode delete01(WarehouseNode p, int check) {
 
 		if (p == null)
@@ -416,12 +402,64 @@ public class WarehouseBook {
 
 	 */
 
-	private void setToRoot(ProductRecord pr, ArrayList<WarehouseNode> arr) {
+	private WarehouseNode setToRoot(ProductRecord pr, ArrayList<ProductRecord> arr) {
+		if (arr.isEmpty()) throw new NullPointerException();
+		WarehouseNode p = new WarehouseNode();
 		for (int i = 0; i < arr.size(); i++) {
-			if (arr.get(i).getRecord().getProductID() == pr.getProductID())
-				pr.setQuantity(pr.getQuantity() + arr.get(i).getRecord().getQuantity());
+			if (arr.get(i).getProductID() == pr.getProductID()) {
+				pr.setQuantity(pr.getQuantity() + arr.get(i).getQuantity());
+				arr.remove(i);
+			}
 		}
-		root.setRecord(pr);
+		p.setRecord(pr);
+		return p;
+	}
+
+	/*
+		reversePostOrder
+		RLN traversal
+		save to an arraylist.
+	 */
+
+	private ArrayList<ProductRecord> reversePostOrder(WarehouseNode p) {
+		ArrayList<ProductRecord> list = new ArrayList<>();
+		Stack<WarehouseNode> s = new Stack<>();
+
+		if (p == null)
+			return list;
+
+		s.push(p);
+		WarehouseNode prev = null;
+		while (!s.isEmpty()) {
+			WarehouseNode current = s.peek();
+
+			/* go down the tree in search of a leaf an if
+				so process it and pop stack otherwise move down */
+			if (prev == null || prev.left == current || prev.right == current) {
+				if (current.left != null)
+					s.push(current.left);
+				else if (current.right != null)
+					s.push(current.right);
+				else {
+					s.pop();
+					list.add(current.getRecord());
+				}
+			}
+			else if(current.left == prev) {
+				if (current.right != null)
+					s.push(current.right);
+				else {
+					s.pop();
+					list.add(current.getRecord());
+				}
+			}
+			else if (current.right == prev) {
+				s.pop();
+				list.add(current.getRecord());
+			}
+			prev = current;
+		}
+		return list;
 	}
 
 	/*
@@ -468,8 +506,31 @@ public class WarehouseBook {
 	}
 
 	/*
-		handle 6th event
+		handle 5th event
+	 */
 
+	public void handle05 (String s) {
+		ArrayList<ProductRecord> arrlist = reversePostOrder(root);
+
+		int id = Integer.parseInt(s.substring(1,4));
+		int quanity = Integer.parseInt(s.substring(4,s.length()));
+		ProductRecord pr = new ProductRecord(id, quanity);
+
+		while (root != null)
+			delete(root.getRecord());
+
+		//System.out.println(arrlist);	//debug
+		root = setToRoot(pr, arrlist);
+		//System.out.println(arrlist);	//debug
+
+		for (int i = 0; i < arrlist.size(); i++)
+			insert(arrlist.get(i), false);
+			//arrlist.remove(i);
+
+	}
+
+	/*
+		handle 6th event
 	 */
 
 	public void handle06 (String s) {
@@ -522,10 +583,11 @@ public class WarehouseBook {
 			wb.process(new File("events.txt"));
 			//System.out.print(wb.getDepth(wb.root.left.getRecord()));		//debug
 			//wb.handle06("63");		//debug
+			//System.out.println(wb.reversePostOrder(wb.root));	//debug
+			//wb.handle05("57191"); 		//debug
 			wb.save(new File("warehouse_new.txt"));
 
 			//System.out.println(wb.getHeight(wb.root)); 	//debug
-			//wb.handle01(""); //debug
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
