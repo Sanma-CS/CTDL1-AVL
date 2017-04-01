@@ -253,7 +253,7 @@ public class WarehouseBook {
 			return  null;
 
 		WarehouseNode node = root;
-		Stack<WarehouseNode> s = new Stack<WarehouseNode>();
+		Stack<WarehouseNode> s = new Stack<>();
 		WarehouseNode min = new WarehouseNode();
 		//min.record = pr;
 		//int minVal = Math.abs(root.getRecord().getProductID() - pr.getProductID());
@@ -408,7 +408,7 @@ public class WarehouseBook {
 		for (int i = 0; i < arr.size(); i++) {
 			if (arr.get(i).getProductID() == pr.getProductID()) {
 				pr.setQuantity(pr.getQuantity() + arr.get(i).getQuantity());
-				arr.remove(i);
+				arr.remove(i);	//so you don't set the root again
 			}
 		}
 		p.setRecord(pr);
@@ -463,9 +463,76 @@ public class WarehouseBook {
 	}
 
 	/*
-		handle 1st event
+		reverse Preorder
+		NRL traversal
+
 	 */
 
+	private ArrayList<ProductRecord> reversePreOrder (WarehouseNode p) {
+		ArrayList<ProductRecord> list = new ArrayList<>();
+		Stack<WarehouseNode> s = new Stack<>();
+
+		if (p == null)
+			return list;
+		s.push(p);	//can't get it (?!)
+		while (!s.isEmpty()) {
+			WarehouseNode current = s.peek();
+			//System.out.println(current.getRecord() + " "); 	debug
+			//list.add(current.getRecord());
+			s.pop();
+
+			/* left child is pushed first so that right is processed first */
+			if (current.left != null)
+				s.push(current.left);
+			if (current.right != null)
+				s.push(current.right);
+
+			list.add(current.getRecord());
+			//s.pop();
+		}
+		return list;
+	}
+
+	/* private ArrayList reversePreOrder() {
+		return reversePreOrder(root);
+	} */
+
+	/*
+		inOrder()
+		LNR traversal
+		TEST LATER!!!!!
+		get an array: min -> max
+	 */
+	private ArrayList<ProductRecord> inOrder(WarehouseNode p) {
+		ArrayList<ProductRecord> list = new ArrayList<>();
+		Stack<WarehouseNode> s = new Stack<>();
+
+		if (p == null)
+			return list;
+		while (p != null) {
+			s.push(p);
+			p = p.left;
+		}
+
+		while (!s.isEmpty()) {
+			p = s.pop();
+			list.add(p.getRecord());
+			if (p.right != null) {
+				p = p.right;
+
+				while (p != null) {
+					s.push(p);
+					p = p.left;
+					//list.add(p.getRecord());
+				}
+			}
+		}
+		return list;
+	}
+
+	/*
+		handle 1st event
+	 */
 	public void handle01 (String s) { 	//1XXXY
 		int id = Integer.parseInt(s.substring(1,4));
 		int quanity = Integer.parseInt(s.substring(4,s.length()));
@@ -485,7 +552,6 @@ public class WarehouseBook {
 	/*
 		handle 2nd event
 	 */
-
 	public void handle02 (String s) { 	//2XXXY
 		int id = Integer.parseInt(s.substring(1,4));
 		int quanity = Integer.parseInt(s.substring(4,s.length()));
@@ -506,9 +572,41 @@ public class WarehouseBook {
 	}
 
 	/*
+		handle 3rd event
+	 */
+	public void handle03 () {
+		ArrayList<ProductRecord> arrlist = inOrder(root);
+		int mid = arrlist.size()/2;
+
+		//System.out.println(arrlist.get(mid).toString());	//debug
+		//System.out.println(mid);	//debug
+
+		root.setRecord(arrlist.get(mid));
+		arrlist.remove(mid);
+		for (int i = 0; i < arrlist.size(); i++) {
+			insert(arrlist.get(i), true);
+		}
+		//for (int i = mid+1; i< arrlist.size(); i++ ) {
+		//	insert(arrlist.get(i), true);
+		//}
+	}
+
+	/*
+		handle 4th event
+	 */
+	public void handle04() {
+		ArrayList<ProductRecord> arrlist = reversePreOrder(root);
+		while (root != null)
+			delete(root.getRecord());
+
+		for (int i = 0; i < arrlist.size(); i++)
+			insert(arrlist.get(i), true);
+
+	}
+
+	/*
 		handle 5th event
 	 */
-
 	public void handle05 (String s) {
 		ArrayList<ProductRecord> arrlist = reversePostOrder(root);
 
@@ -585,6 +683,10 @@ public class WarehouseBook {
 			//wb.handle06("63");		//debug
 			//System.out.println(wb.reversePostOrder(wb.root));	//debug
 			//wb.handle05("57191"); 		//debug
+			//System.out.println(wb.reversePreOrder(wb.root)); 	//debug
+			//wb.handle04();
+			System.out.println(wb.inOrder(wb.root));	//debug
+			wb.handle03();	//debug
 			wb.save(new File("warehouse_new.txt"));
 
 			//System.out.println(wb.getHeight(wb.root)); 	//debug
