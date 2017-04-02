@@ -68,7 +68,7 @@ public class WarehouseBook {
 	}
 
 	/*
-		get String from input file into a List<String>
+		get String from input file into a ArrayList<String>
 	 */
 	private ArrayList<String> convertList (File file) throws  IOException {
 		Scanner sc = new Scanner(file);
@@ -140,10 +140,55 @@ public class WarehouseBook {
 
 	public void process(File file) throws IOException {
 		//sinh vien viet ma tai day
+
+		Scanner sc = new Scanner(file);
+		String text = "";
+		while (sc.hasNext()) {
+			text += sc.next() + " ";
+			//System.out.println(text);
+
+		}
+		//System.out.println(text);
+		List<String> list = new ArrayList<>(Arrays.asList(text.split("\\s+")));
+		//System.out.println(list);
+		process(list);
+
+
 	}
 
 	public void process(List<String> events) {
 		//sinh vien viet ma tai day
+
+		for (int i = 0; i < events.size(); i++) {
+			int event_case = Integer.parseInt(events.get(i).substring(0,1));
+			if (event_case == 0)
+				break;
+			else {
+				switch (event_case) {
+					case 1:
+						handle01(events.get(i));
+						break;
+					case 2:
+						handle02(events.get(i));
+						break;
+					case 3:
+						handle03();
+						break;
+					case 4:
+						handle04();
+						break;
+					case 5:
+						handle05(events.get(i));
+						break;
+					case 6:
+						handle06(events.get(i));
+						break;
+					default:
+						System.out.println("invaild input");
+						//break;
+				}
+			}
+		}
 	}
 
 	/*
@@ -539,7 +584,7 @@ public class WarehouseBook {
 		int quanity = Integer.parseInt(s.substring(4,s.length()));
 		ProductRecord pr = new ProductRecord(id, quanity);
 		//WarehouseNode p = new WarehouseNode();
-		System.out.print(id + "\n" + quanity); 	//debug
+		//System.out.print(id + "\n" + quanity); 	//debug
 
 		if(search(id) == null) {
 			insert(pr, false);
@@ -695,8 +740,8 @@ public class WarehouseBook {
 			//wb.handle05("57191"); 		//debug
 			//System.out.println(wb.reversePreOrder(wb.root)); 	//debug
 			//wb.handle04();
-			System.out.println(wb.inOrder(wb.root));	//debug
-			wb.handle03();	//debug
+			//System.out.println(wb.inOrder(wb.root));	//debug
+			//wb.handle03();	//debug
 			wb.save(new File("warehouse_new.txt"));
 
 			//System.out.println(wb.getHeight(wb.root)); 	//debug
