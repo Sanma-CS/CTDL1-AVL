@@ -107,7 +107,7 @@ public class WarehouseBook {
 			int quantiny = Integer.parseInt(list.get(0).substring(3,5));
 			//System.out.println(quantiny);		//debug
 			ProductRecord pr = new ProductRecord(id, quantiny);
-			p.record = pr;
+			p.setRecord(pr);
 
 			list.remove(0);
 
@@ -436,24 +436,25 @@ public class WarehouseBook {
 			/* go down the tree in search of a leaf an if
 				so process it and pop stack otherwise move down */
 			if (prev == null || prev.left == current || prev.right == current) {
-				if (current.left != null)
-					s.push(current.left);
-				else if (current.right != null)
-					s.push(current.right);
-				else {
-					s.pop();
-					list.add(current.getRecord());
-				}
-			}
-			else if(current.left == prev) {
 				if (current.right != null)
 					s.push(current.right);
+				else if (current.left != null)
+					s.push(current.left);
 				else {
 					s.pop();
 					list.add(current.getRecord());
 				}
 			}
-			else if (current.right == prev) {
+
+			else if(current.right == prev) {
+				if (current.left != null)
+					s.push(current.left);
+				else {
+					s.pop();
+					list.add(current.getRecord());
+				}
+			}
+			else if (current.left == prev) {
 				s.pop();
 				list.add(current.getRecord());
 			}
@@ -580,15 +581,24 @@ public class WarehouseBook {
 
 		//System.out.println(arrlist.get(mid).toString());	//debug
 		//System.out.println(mid);	//debug
+		while (root != null)
+			delete(root.getRecord());
 
-		root.setRecord(arrlist.get(mid));
-		arrlist.remove(mid);
-		for (int i = 0; i < arrlist.size(); i++) {
-			insert(arrlist.get(i), true);
+		WarehouseNode p = new WarehouseNode();
+		p.setRecord(arrlist.get(mid));
+		WarehouseNode l = null;
+		WarehouseNode r = null;
+		//arrlist.remove(mid);
+		for (int i = 0; i < mid; i++) {
+			l = insert(l, arrlist.get(i), true);
 		}
-		//for (int i = mid+1; i< arrlist.size(); i++ ) {
-		//	insert(arrlist.get(i), true);
-		//}
+		for (int i = mid+1; i< arrlist.size(); i++ ) {
+			r = insert(r, arrlist.get(i), true);
+		}
+
+		p.setLeft(l);
+		p.setRight(r);
+		root = p;
 	}
 
 	/*
