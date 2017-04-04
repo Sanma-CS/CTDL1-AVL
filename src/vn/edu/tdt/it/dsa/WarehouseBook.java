@@ -3,7 +3,6 @@ package vn.edu.tdt.it.dsa;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -452,7 +451,8 @@ public class WarehouseBook {
 		WarehouseNode p = new WarehouseNode();
 		for (int i = 0; i < arr.size(); i++) {
 			if (arr.get(i).getProductID() == pr.getProductID()) {
-				pr.setQuantity(pr.getQuantity() + arr.get(i).getQuantity());
+				if (pr.getQuantity() + arr.get(i).getQuantity() < 99)
+					pr.setQuantity(pr.getQuantity() + arr.get(i).getQuantity());
 				arr.remove(i);	//so you don't set the root again
 			}
 		}
@@ -524,8 +524,10 @@ public class WarehouseBook {
 		while (!s.isEmpty()) {
 			WarehouseNode current = s.peek();
 			//System.out.println(current.getRecord() + " "); 	debug
-			//list.add(current.getRecord());
+			list.add(current.getRecord());
 			s.pop();
+			//list.add(current.getRecord());
+
 
 			/* left child is pushed first so that right is processed first */
 			if (current.left != null)
@@ -533,7 +535,6 @@ public class WarehouseBook {
 			if (current.right != null)
 				s.push(current.right);
 
-			list.add(current.getRecord());
 			//s.pop();
 		}
 		return list;
@@ -563,6 +564,7 @@ public class WarehouseBook {
 		while (!s.isEmpty()) {
 			p = s.pop();
 			list.add(p.getRecord());
+			//System.out.println(p.getRecord()); //debug
 			if (p.right != null) {
 				p = p.right;
 
@@ -591,7 +593,8 @@ public class WarehouseBook {
 		}
 		else {
 			//p = search(id);
-			search(id).getRecord().setQuantity(search(id).getRecord().getQuantity() + quanity);
+			if (search(id).getRecord().getQuantity() + quanity > 99)
+				search(id).getRecord().setQuantity(search(id).getRecord().getQuantity() + quanity);
 		}
 	}
 
@@ -733,7 +736,7 @@ public class WarehouseBook {
 		//vi du ham main de chay
 		try{
 			WarehouseBook wb = new WarehouseBook(new File("warehouse.txt"));
-			wb.process(new File("events.txt"));
+			//wb.process(new File("events.txt"));
 			//System.out.print(wb.getDepth(wb.root.left.getRecord()));		//debug
 			//wb.handle06("63");		//debug
 			//System.out.println(wb.reversePostOrder(wb.root));	//debug
@@ -742,6 +745,7 @@ public class WarehouseBook {
 			//wb.handle04();
 			//System.out.println(wb.inOrder(wb.root));	//debug
 			//wb.handle03();	//debug
+			//System.out.println("balance: " + wb.balanceFactor(wb.root));
 			wb.save(new File("warehouse_new.txt"));
 
 			//System.out.println(wb.getHeight(wb.root)); 	//debug
