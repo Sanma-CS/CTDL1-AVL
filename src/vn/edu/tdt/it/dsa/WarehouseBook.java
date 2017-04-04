@@ -58,6 +58,25 @@ public class WarehouseBook {
 		size = 0;
 	}
 
+	public WarehouseBook(String string) throws IOException {
+		string = string.replaceAll("\\s*[N]\\s*"," N ")
+				.replaceAll("\\s*[(]\\s*"," ( ").replaceAll("\\s*[)]\\s*"," ) ");
+
+		ArrayList<String> list = new ArrayList<>(Arrays.asList(string.split("\\s+")));
+		ArrayList<String> result = new ArrayList<>();
+
+		for (String item : list) {
+			if (item.length() <= 5) {
+				result.add(item);
+			} else if (item.length() == 10) {
+				result.add(item.substring(0,5));
+				result.add(item.substring(5,item.length()));
+			} else throw new IOException("Unknown input format");
+		}
+		//System.out.println(list);	//debug
+		root = read(result);
+	}
+
 	public WarehouseBook(File file) throws IOException {
 		//sinh vien viet ma tai day
 		ArrayList<String> list = new ArrayList<String>();
@@ -136,6 +155,10 @@ public class WarehouseBook {
 
 
 
+	}
+
+	public WarehouseNode getRoot() {
+		return root;
 	}
 
 	public void process(File file) throws IOException {
