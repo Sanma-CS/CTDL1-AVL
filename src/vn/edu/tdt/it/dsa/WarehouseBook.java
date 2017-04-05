@@ -148,16 +148,10 @@ public class WarehouseBook {
 
         ArrayList<String> events = new ArrayList<>();
 		Scanner sc = new Scanner(file);
-//		String text = "";
 		while (sc.hasNext()) {
-//			text += sc.next() + " ";
-			//System.out.println(text);
             events.add(sc.next());
 		}
         sc.close();
-		//System.out.println(text);
-//		List<String> list = new ArrayList<>(Arrays.asList(text.split("\\s+")));
-		//System.out.println(list);
 		process(events);
 	}
 
@@ -166,37 +160,6 @@ public class WarehouseBook {
      * @param events Event list
      * */
 	public void process(List<String> events) {
-		/*for (int i = 0; i < events.size(); i++) {
-			int event_case = Integer.parseInt(events.get(i).substring(0,1));
-			if (event_case == 0)
-				break;
-			else {
-				switch (event_case) {
-					case 1:
-						handle01(events.get(i));
-						break;
-					case 2:
-						handle02(events.get(i));
-						break;
-					case 3:
-						handle03();
-						break;
-					case 4:
-						handle04();
-						break;
-					case 5:
-						handle05(events.get(i));
-						break;
-					case 6:
-						handle06(events.get(i));
-						break;
-					default:
-						System.out.println("invaild input");
-						//break;
-				}
-			}
-		}*/
-
 		for (String event : events) {
             if ("0".equals(event)) {
                 return;
