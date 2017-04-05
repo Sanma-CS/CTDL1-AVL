@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Stack;
-//import java.util.Objects;
 
 
 public class WarehouseBook {
@@ -46,34 +45,45 @@ public class WarehouseBook {
 	}
 
 	private WarehouseNode root;
-	private int size; //have to update
 
+	@SuppressWarnings("unused")
+	private int size;
+
+	@SuppressWarnings("unused")
 	public int getSize(){
-		return size;	//have to update later
+		return size;
 	}
 
+	@SuppressWarnings("unused")
 	public WarehouseBook(){
 		root = null;
 		size = 0;
 	}
 
+	/**
+	 * Deserialize binary search tree from file with given format
+	 * @param file Warehouse data
+     * @exception IOException Throw exception if data format not following XXXYY with XXX is ProductID and YY is Quantity
+	 */
 	public WarehouseBook(File file) throws IOException {
-		//sinh vien viet ma tai day
-		ArrayList<String> list = new ArrayList<String>();
-		list = convertList(file);
-		root = read(list);
-		//System.out.println(root.getRecord()); 	//debug
-
+		ArrayList<String> list;
+		list = convertToList(file);
+		root = buildBST(list);
 	}
 
-	/*
-		get String from input file into a ArrayList<String>
-	 */
-	private ArrayList<String> convertList (File file) throws  IOException {
-		Scanner sc = new Scanner(file);
-		String content = sc.nextLine().replaceAll("\\s*[N]\\s*"," N ")
-				.replaceAll("\\s*[(]\\s*"," ( ").replaceAll("\\s*[)]\\s*"," ) ");
-		sc.close();
+	/**
+	* Read data from file, split all character and node data into separate instances
+    * @param file Warehouse data
+    * @return ArrayList<String> List of parsed data
+    * @exception IOException Throw exception if data format not following XXXYY with XXX is ProductID and YY is Quantity
+	* */
+	private ArrayList<String> convertToList(File file) throws  IOException {
+        // Separate all special character "(",")","N"
+		String content = new Scanner(file).nextLine()
+                .replaceAll("\\s*[N]\\s*"," N ")
+				.replaceAll("\\s*[(]\\s*"," ( ")
+                .replaceAll("\\s*[)]\\s*"," ) ");
+
 		ArrayList<String> list = new ArrayList<>(Arrays.asList(content.split("\\s+")));
 		ArrayList<String> result = new ArrayList<>();
 
@@ -85,15 +95,15 @@ public class WarehouseBook {
 				result.add(item.substring(5,item.length()));
 			} else throw new IOException("Unknown input format");
 		}
-		//System.out.println(list);	//debug
 		return result;
 	}
 
-	/*
-		read list into BSTree
-		UPDATE SIZE LATER
-	 */
-	private WarehouseNode read(ArrayList<String> list) {
+	/**
+     * Generate a binary search tree from given list
+     * @param list Input data
+     * @return WarehouseNode Root of binary search tree with reference attached
+     * */
+	private WarehouseNode buildBST(ArrayList<String> list) {
 		WarehouseNode p = new WarehouseNode();
 		try {
 			if (list.get(0).equals("N")) {
@@ -101,64 +111,62 @@ public class WarehouseBook {
 				return null;
 			}
 
-			int id = Integer.parseInt(list.get(0).substring(0,3));
-			//System.out.println(id);		//debug
-			int quantiny = Integer.parseInt(list.get(0).substring(3,5));
-			//System.out.println(quantiny);		//debug
-			ProductRecord pr = new ProductRecord(id, quantiny);
-			p.setRecord(pr);
+			p.setRecord(new ProductRecord(Integer.parseInt(list.get(0).substring(0,3)),
+                    Integer.parseInt(list.get(0).substring(3,5))));
 
 			list.remove(0);
 
 			if(list.get(0).equals("(")) {
 				list.remove(0);
-				p.left = read(list);
-				p.right = read(list);
+				p.setLeft(buildBST(list));
+				p.setRight(buildBST(list));
 				list.remove(0);
 			}
-			//System.out.println(list);	//debug
 		}
 		catch(IndexOutOfBoundsException exception) {
-			exception.getMessage();
+			// Do nothing
 		}
 		return p;
 
 	}
 
+	/**
+     * Serialize current binary search tree to file with given format
+     * @param file Output file
+     * */
 	public void save(File file) throws IOException {
-		//sinh vien viet ma tai day
-		String h = toString();
-		//System.out.println(h);	//debug
 		PrintWriter out = new PrintWriter(file.getPath());
-		out.print(h);
+		out.print(toString());
 		out.close();
-
-
-
 	}
 
+	/**
+     * Reading events from file to process
+     * @param file Event file (max = 2^100)
+     * */
 	public void process(File file) throws IOException {
-		//sinh vien viet ma tai day
 
+        ArrayList<String> events = new ArrayList<>();
 		Scanner sc = new Scanner(file);
-		String text = "";
+//		String text = "";
 		while (sc.hasNext()) {
-			text += sc.next() + " ";
+//			text += sc.next() + " ";
 			//System.out.println(text);
-
+            events.add(sc.next());
 		}
+        sc.close();
 		//System.out.println(text);
-		List<String> list = new ArrayList<>(Arrays.asList(text.split("\\s+")));
+//		List<String> list = new ArrayList<>(Arrays.asList(text.split("\\s+")));
 		//System.out.println(list);
-		process(list);
-
-
+		process(events);
 	}
 
+	/**
+     * Event handler
+     * @param events Event list
+     * */
 	public void process(List<String> events) {
-		//sinh vien viet ma tai day
-
-		for (int i = 0; i < events.size(); i++) {
+		/*for (int i = 0; i < events.size(); i++) {
 			int event_case = Integer.parseInt(events.get(i).substring(0,1));
 			if (event_case == 0)
 				break;
@@ -187,45 +195,84 @@ public class WarehouseBook {
 						//break;
 				}
 			}
-		}
+		}*/
+
+		for (String event : events) {
+            if ("0".equals(event)) {
+                return;
+            }
+            switch (event.charAt(0)) {
+                case '1':
+                    handle01(event);
+                    break;
+                case '2':
+                    handle02(event);
+                    break;
+                case '3':
+                    handle03();
+                    break;
+                case '4':
+                    handle04();
+                    break;
+                case '5':
+                    handle05(event);
+                    break;
+                case '6':
+                    handle06(event);
+                    break;
+                default:
+                    System.out.println("Invalid input");
+                    break;
+            }
+        }
 	}
 
-	/*
-		search key in BST, key is productID
-		public method: from root
-		private method: current WarehouseNode - CAN ONLY USE IN BST
-	 */
-
-	public WarehouseNode search (int key) {
-		return  search(root, key);
+	/**
+     * Search {@link WarehouseNode} function with key is {@link ProductRecord}.productID
+     * <p>This function will call recursive search function</p>
+     * @param productID {@link ProductRecord} to find with productID
+     * @return WarehouseNode Search result, equals null if not found
+     * */
+	private WarehouseNode search (int productID) {
+		return search(root, productID);
 	}
 
-	private WarehouseNode search(WarehouseNode p, int key) {
+	/**
+     * Recursive function to search {@link WarehouseNode} with key is productID
+     * @param p Current iterating {@link WarehouseNode}
+     * @param productID productID to search
+     * */
+	private WarehouseNode search(WarehouseNode p, int productID) {
 		if (p == null)
 			return null;
-		else if (key == p.getRecord().getProductID()) {
+		else if (productID == p.getRecord().getProductID()) {
 			return p;
 		}
-		else if (key < p.getRecord().getProductID()){
-			return search(p.left, key);
+		else if (productID < p.getRecord().getProductID()){
+			return search(p.getLeft(), productID);
 		}
 		else  {
-			return search(p.right, key);
+			return search(p.getRight(), productID);
 		}
 	}
 
-	/*
-		add the new node
-		public method: from root
-		private method: return a new WarehouseNode with ID & quanity
-	 */
-
-	public void insert (ProductRecord pr, boolean flag) {
+	/**
+     * Insert function to insert new {@link WarehouseNode} into current binary search tree
+     * @param pr {@link ProductRecord} of new {@link WarehouseNode} to be inserted
+     * @param flag Enable balance factor (AVL mode)
+     * */
+	private void insert (ProductRecord pr, boolean flag) {
 		root = insert(root, pr, flag);
 	}
 
+	/**
+     * Recursive function to insert new {@link WarehouseNode} into current binary search tree
+     * @param p Current iterating {@link WarehouseNode}
+     * @param pr {@link ProductRecord} of new {@link WarehouseNode} to be inserted
+     * @param flag Enable balance factor (AVL mode)
+     * */
 	private WarehouseNode insert (WarehouseNode p, ProductRecord pr, boolean flag) {
-		//WarehouseNode n = new WarehouseNode();
+
 		if (p == null) {
 			WarehouseNode n = new WarehouseNode();
 			n.setRecord(pr);
@@ -235,63 +282,70 @@ public class WarehouseBook {
 			return p;
 		}
 		else if (pr.getProductID() < p.getRecord().getProductID()) {
-			p.left = insert(p.left, pr, flag);
+            p.setLeft(insert(p.getLeft(), pr, flag));
 		}
 		else  {
-			p.right = insert(p.right, pr, flag);
+			p.setRight(insert(p.getRight(), pr, flag));
 		}
 		if (!flag)
-			return p;	//inset BST
+			return p;	// Binary search tree insert mode
 		else
-			return balance(p); //inset AVL
+			return balance(p); // AVL tree insert mode
 	}
 
-	/*
-		delete
-	 */
-
-	public  void delete(ProductRecord key) {
+	/**
+     * Delete function to delete {@link WarehouseNode} from current binary search tree
+     * @param key {@link ProductRecord} to delete
+     * */
+	private void delete(ProductRecord key) {
 		root = delete(root, key);
 	}
 
+	/**
+     * Recursive function to delete {@link WarehouseNode} from current binary search tree
+     * @param p Current iterating {@link WarehouseNode}
+     * @param check {@link ProductRecord} to delete
+     * */
 	private WarehouseNode delete(WarehouseNode p, ProductRecord check) {
 
 		if (p == null) throw new RuntimeException();
 		else if (check.getProductID() < p.getRecord().getProductID()) {
-			p.left = delete(p.left, check);
+			p.setLeft(delete(p.getLeft(), check));
 		}
 		else if (check.getProductID() > p.getRecord().getProductID()) {
-			p.right = delete(p.right, check);
+			p.setRight(delete(p.getRight(), check));
 		}
 		else {
-			if (p.left == null)
+			if (p.getLeft() == null)
 				return p.getRight();
-			else if (p.right == null)
+			else if (p.getRight() == null)
 				return  p.getLeft();
 			else {
-				// get data from the rightmost node in the left subtree
-				p.record = retrieveData(p.left);
-				//delete the rightmost node in the left subtree
-				p.left = delete(p.left, p.getRecord());
+				// Retrieve data from the rightmost node in the left subtree
+				p.setRecord(retrieveData(p.getLeft()));
+				// Delete the rightmost node in the left subtree
+				p.setLeft(delete(p.getLeft(), p.getRecord()));
  			}
 		}
 		return  p;
 	}
 
+	/**
+     * Utility function to retrieve data when deleting {@link WarehouseNode} from current binary search tree
+     * @param p Current {@link WarehouseNode} to be retrieved
+     * @return ProductRecord Data of current {@link WarehouseNode}
+     * */
 	private ProductRecord retrieveData (WarehouseNode p) {
-		while (p.right != null)
-			p = p.right;
-		return  p.getRecord();
+		while (p.getRight() != null)
+			p = p.getRight();
+		return p.getRecord();
 	}
 
-	/*
-		search02
-		inorder traversal
-		using stack: min -> max
-		return the most truenode
-		>>> use it for the 2nd event.
-	 */
-
+	/**
+     * Search {@link WarehouseNode} whose difference is minimal
+     * @param pr {@link ProductRecord} to search
+     * @return WarehouseNode Search result, equals null if not found
+     * */
 	private WarehouseNode search02 (ProductRecord pr) {
 		if (root == null)
 			return  null;
@@ -299,13 +353,11 @@ public class WarehouseBook {
 		WarehouseNode node = root;
 		Stack<WarehouseNode> s = new Stack<>();
 		WarehouseNode min = new WarehouseNode();
-		//min.record = pr;
-		//int minVal = Math.abs(root.getRecord().getProductID() - pr.getProductID());
 		int minVal = 1000;
 
 		while(node!=null) {
 			s.push(node);
-			node = node.left;
+			node = node.getLeft();
 		}
 
 		while (s.size() > 0) {
@@ -313,25 +365,32 @@ public class WarehouseBook {
 			if (Math.abs(node.getRecord().getProductID() - pr.getProductID()) < minVal) {
 				min = node;
 				minVal = Math.abs(node.getRecord().getProductID() - pr.getProductID());
-
 			}
-			if (node.right != null) {
-				node = node.right;
+			if (node.getRight() != null) {
+				node = node.getRight();
 				while (node != null) {
 					s.push(node);
-					node = node.left;
+					node = node.getLeft();
 				}
 			}
 		}
 		return  min;
-
 	}
 
+	/**
+     * Find height of {@link WarehouseNode}
+     * @param p {@link WarehouseNode} to calculate height
+     * @return int Height of {@link WarehouseNode}
+     * */
+    private int getHeight(WarehouseNode p) {
+        return  getHeight(p, 1);
+    }
 
-	/*
-			getHeight()
-	 */
-
+    /**
+     * Recursive function to calculate height of {@link WarehouseNode}
+     * @param p Current iterating {@link WarehouseNode}
+     * @param level Current {@link WarehouseNode} level
+     * */
 	private int getHeight(WarehouseNode p, int level) {
 		if (p == null)
 			return 0;
@@ -344,41 +403,44 @@ public class WarehouseBook {
 		return  uplevel + 1;
 	}
 
-	public  int getHeight(WarehouseNode p) {
-		return  getHeight(p, 1);
-	}
-
-	/*
-		balanceFactor
-	 */
-
+    /**
+     * Calculate balance factor of current {@link WarehouseNode}
+     * @param p {@link WarehouseNode} to be calculated
+     * @return int Balance of {@link WarehouseNode}
+     * */
 	private int balanceFactor(WarehouseNode p) {
 		p.setBalance(getHeight(p.left) - getHeight(p.right));
 		return p.getBalance();
 	}
 
-	/*
-		rotate right & left
-	 */
-
+	/**
+     * Rotate current {@link WarehouseNode} to right position
+     * @param p {@link WarehouseNode} to be right rotated
+     * @return WarehouseNode New {@link WarehouseNode} position
+     * */
 	private WarehouseNode rotateRight(WarehouseNode p) {
-		WarehouseNode g = p.left;
-		p.left = g.right;
-		g.right = p;
+		WarehouseNode g = p.getLeft();
+		p.setLeft(g.getRight());
+		g.setRight(p);
 		return g;
 	}
 
+    /**
+     * Rotate current {@link WarehouseNode} to left position
+     * @param p {@link WarehouseNode} to be left rotated
+     * @return WarehouseNode New {@link WarehouseNode} position
+     * */
 	private WarehouseNode rotateLeft(WarehouseNode p) {
-		WarehouseNode g = p.right;
-		p.right = g.left;
-		g.left = p;
+		WarehouseNode g = p.getRight();
+        p.setRight(g.getLeft());
+        g.setLeft(p);
 		return g;
-
 	}
 
-	/*
-		balance
-	 */
+	/**
+     * Balance {@link WarehouseNode} in case AVL tree is unbalanced
+     * @param p Current {@link WarehouseNode} to be balanced
+     * */
 	private WarehouseNode balance(WarehouseNode p) {
 		//p.setBalance(balanceFactor(p));
 		if (balanceFactor(p) < -1) {
@@ -396,76 +458,83 @@ public class WarehouseBook {
 		return p;
 	}
 
-	/*
-		GET depth
-	 */
+	/**
+     * Function to return depth of {@link WarehouseNode} given {@link ProductRecord}
+     * @param pr {@link ProductRecord} to find
+     * @return int Depth of {@link WarehouseNode} given pr
+     * */
+    private int getDepth(ProductRecord pr) {
+        return getDepth(root, pr,1);
+    }
 
+    /**
+     * Recursive function to return depth of {@link WarehouseNode} given {@link ProductRecord}
+     * @param p Current iterating {@link WarehouseNode}
+     * @param pr {@link ProductRecord} to find
+     * @param level Current level
+     * */
 	private int getDepth(WarehouseNode p, ProductRecord pr, int level) {
 		if (p == null)
 			return 0;
-		if (p.getRecord() == pr) //updating: (Objects.equals(p.getRecord().toString(), pr.toString()))
+		if (p.getRecord() == pr)
 			return level;
-		int downlevel = getDepth(p.left, pr, level + 1);
-		if (downlevel != 0)
-			return downlevel;
-		downlevel = getDepth(p.right, pr, level + 1);
-		return downlevel;
-	}
-	public int getDepth(ProductRecord pr) {
-		return getDepth(root, pr,1);
+		int downLevel = getDepth(p.getLeft(), pr, level + 1);
+		if (downLevel != 0)
+			return downLevel;
+		downLevel = getDepth(p.getRight(), pr, level + 1);
+		return downLevel;
 	}
 
-	/*
-		delete01
-		delete all node has depth >= check
-	*/
+	/**
+     * Function to delete all {@link WarehouseNode}  whose depth is equal or greater than depth
+     * @param depth Depth to delete
+     * */
+    private void delete01(int depth) {
+        root = delete01(root, depth);
+    }
 
+    /**
+     * Recursive function to delete all {@link WarehouseNode} whose depth is equal or greater than check
+     * @param p Current iterating {@link WarehouseNode}
+     * @param check Depth to delete
+     * */
 	private WarehouseNode delete01(WarehouseNode p, int check) {
-
 		if (p == null)
 			return null;
 		if (getDepth(p.getRecord()) >= check)
 			p = null;
 		else {
-			// get data from the rightmost node in the left subtree
-			//p.record = retrieveData(p.left);
-			p.left = delete01(p.left, check);
-			p.right = delete01(p.right, check);
+			// Retrieve data from the rightmost node in the left subtree
+            p.setLeft(delete01(p.getLeft(), check));
+            p.setRight(delete01(p.getRight(), check));
 		}
-		return  p;
+		return p;
 	}
 
-	public  void delete01(int key) {
-		root = delete01(root, key);
-	}
-
-	/*
-		Precedence WareHouseNode
-		setToRoot()
-		for handling 5th event
-
-	 */
-
+	/**
+     * Set {@link WarehouseNode} having {@link ProductRecord} to be root of current binary search tree
+     * @param pr {@link ProductRecord} to search
+     * @param arr Current {@link ProductRecord} list
+     * @return WarehouseNode {@link WarehouseNode} to be root
+     * */
 	private WarehouseNode setToRoot(ProductRecord pr, ArrayList<ProductRecord> arr) {
-		if (arr.isEmpty()) throw new NullPointerException();
 		WarehouseNode p = new WarehouseNode();
 		for (int i = 0; i < arr.size(); i++) {
 			if (arr.get(i).getProductID() == pr.getProductID()) {
 				if (pr.getQuantity() + arr.get(i).getQuantity() < 99)
 					pr.setQuantity(pr.getQuantity() + arr.get(i).getQuantity());
-				arr.remove(i);	//so you don't set the root again
+				arr.remove(i);
 			}
 		}
 		p.setRecord(pr);
 		return p;
 	}
 
-	/*
-		reversePostOrder
-		RLN traversal
-		save to an arraylist.
-	 */
-
+	/**
+     * Iterative ReversePostOrder tree traversal
+     * @param p Root of current binary search tree to traverse
+     * @return ArrayList<ProductRecord> List of {@link ProductRecord}
+     * */
 	private ArrayList<ProductRecord> reversePostOrder(WarehouseNode p) {
 		ArrayList<ProductRecord> list = new ArrayList<>();
 		Stack<WarehouseNode> s = new Stack<>();
@@ -478,28 +547,28 @@ public class WarehouseBook {
 		while (!s.isEmpty()) {
 			WarehouseNode current = s.peek();
 
-			/* go down the tree in search of a leaf an if
-				so process it and pop stack otherwise move down */
-			if (prev == null || prev.left == current || prev.right == current) {
-				if (current.right != null)
-					s.push(current.right);
-				else if (current.left != null)
-					s.push(current.left);
+//			 Go down the tree in search of a leaf an if
+//				so process it and pop stack otherwise move down
+			if (prev == null || prev.getLeft() == current || prev.getRight() == current) {
+				if (current.getRight() != null)
+					s.push(current.getRight());
+				else if (current.getLeft() != null)
+					s.push(current.getLeft());
 				else {
 					s.pop();
 					list.add(current.getRecord());
 				}
 			}
 
-			else if(current.right == prev) {
-				if (current.left != null)
-					s.push(current.left);
+			else if(current.getRight() == prev) {
+				if (current.getLeft() != null)
+					s.push(current.getLeft());
 				else {
 					s.pop();
 					list.add(current.getRecord());
 				}
 			}
-			else if (current.left == prev) {
+			else if (current.getLeft() == prev) {
 				s.pop();
 				list.add(current.getRecord());
 			}
@@ -508,48 +577,38 @@ public class WarehouseBook {
 		return list;
 	}
 
-	/*
-		reverse Preorder
-		NRL traversal
-
-	 */
-
+    /**
+     * Iterative ReversePreOrder tree traversal
+     * @param p Root of current binary search tree to traverse
+     * @return ArrayList<ProductRecord> List of {@link ProductRecord}
+     * */
 	private ArrayList<ProductRecord> reversePreOrder (WarehouseNode p) {
 		ArrayList<ProductRecord> list = new ArrayList<>();
 		Stack<WarehouseNode> s = new Stack<>();
 
 		if (p == null)
 			return list;
-		s.push(p);	//can't get it (?!)
+		s.push(p);
 		while (!s.isEmpty()) {
 			WarehouseNode current = s.peek();
-			//System.out.println(current.getRecord() + " "); 	debug
 			list.add(current.getRecord());
 			s.pop();
-			//list.add(current.getRecord());
 
 
-			/* left child is pushed first so that right is processed first */
-			if (current.left != null)
-				s.push(current.left);
-			if (current.right != null)
-				s.push(current.right);
-
-			//s.pop();
+//			 Left child is pushed first so that right is processed first
+			if (current.getLeft() != null)
+				s.push(current.getLeft());
+			if (current.getRight() != null)
+				s.push(current.getRight());
 		}
 		return list;
 	}
 
-	/* private ArrayList reversePreOrder() {
-		return reversePreOrder(root);
-	} */
-
-	/*
-		inOrder()
-		LNR traversal
-		TEST LATER!!!!!
-		get an array: min -> max
-	 */
+    /**
+     * Iterative InOrder tree traversal
+     * @param p Root of current binary search tree to traverse
+     * @return ArrayList<ProductRecord> List of {@link ProductRecord}
+     * */
 	private ArrayList<ProductRecord> inOrder(WarehouseNode p) {
 		ArrayList<ProductRecord> list = new ArrayList<>();
 		Stack<WarehouseNode> s = new Stack<>();
@@ -558,53 +617,64 @@ public class WarehouseBook {
 			return list;
 		while (p != null) {
 			s.push(p);
-			p = p.left;
+			p = p.getLeft();
 		}
 
 		while (!s.isEmpty()) {
 			p = s.pop();
 			list.add(p.getRecord());
-			//System.out.println(p.getRecord()); //debug
-			if (p.right != null) {
-				p = p.right;
+			if (p.getRight() != null) {
+				p = p.getRight();
 
 				while (p != null) {
 					s.push(p);
-					p = p.left;
-					//list.add(p.getRecord());
+					p = p.getLeft();
 				}
 			}
 		}
 		return list;
 	}
 
-	/*
-		handle 1st event
-	 */
-	public void handle01 (String s) { 	//1XXXY
+	/**
+     * Handle event 1
+     * <p>Insert {@link WarehouseNode} or add quantity to exist {@link WarehouseNode}</p>
+     * <p>Format: 1XXXY</p>
+     * <ul>
+     *     <li><b>XXX</b> : {@link WarehouseNode} to be inserted or added</li>
+     *     <li><b>Y</b> : Quantity of {@link WarehouseNode}'s {@link ProductRecord}</li>
+     * </ul>
+     * */
+	public void handle01 (String s) {
 		int id = Integer.parseInt(s.substring(1,4));
-		int quanity = Integer.parseInt(s.substring(4,s.length()));
-		ProductRecord pr = new ProductRecord(id, quanity);
-		//WarehouseNode p = new WarehouseNode();
-		//System.out.print(id + "\n" + quanity); 	//debug
+		int quantity = Integer.parseInt(s.substring(4,s.length()));
+		ProductRecord pr = new ProductRecord(id, quantity);
 
 		if(search(id) == null) {
 			insert(pr, false);
 		}
 		else {
-			//p = search(id);
-			if (search(id).getRecord().getQuantity() + quanity > 99)
-				search(id).getRecord().setQuantity(search(id).getRecord().getQuantity() + quanity);
+			if (search(id).getRecord().getQuantity() + quantity > 99) {
+                search(id).getRecord().setQuantity(99);
+            } else {
+                search(id).getRecord().setQuantity(search(id).getRecord().getQuantity() + quantity);
+            }
 		}
 	}
 
-	/*
-		handle 2nd event
-	 */
+	/**
+     * Handle event 2
+     * <p>Remove quantity of {@link WarehouseNode}'s {@link ProductRecord}</p>
+     * <p>If {@link WarehouseNode}'s {@link ProductRecord} equals 0, remove {@link WarehouseNode} of current tree</p>
+     * <p>Format: 2XXXY</p>
+     * <ul>
+     *     <li><b>XXX</b> : {@link WarehouseNode} to be removed or subtracted</li>
+     *     <li><b>Y</b> : Quantity of {@link WarehouseNode}'s {@link ProductRecord}</li>
+     * </ul>
+     * */
 	public void handle02 (String s) { 	//2XXXY
 		int id = Integer.parseInt(s.substring(1,4));
-		int quanity = Integer.parseInt(s.substring(4,s.length()));
-		ProductRecord check = new ProductRecord(id, quanity);
+		int quantity = Integer.parseInt(s.substring(4,s.length()));
+		ProductRecord check = new ProductRecord(id, quantity);
 
 		WarehouseNode p = search02(check);
 		if (p == null) throw new NullPointerException();
@@ -620,15 +690,15 @@ public class WarehouseBook {
 
 	}
 
-	/*
-		handle 3rd event
-	 */
+	/**
+     * Handle event 3
+     * <p>Simple AVL restructure</p>
+     * <p>Format: 3</p>
+     * */
 	public void handle03 () {
 		ArrayList<ProductRecord> arrlist = inOrder(root);
 		int mid = arrlist.size()/2;
 
-		//System.out.println(arrlist.get(mid).toString());	//debug
-		//System.out.println(mid);	//debug
 		while (root != null)
 			delete(root.getRecord());
 
@@ -636,7 +706,7 @@ public class WarehouseBook {
 		p.setRecord(arrlist.get(mid));
 		WarehouseNode l = null;
 		WarehouseNode r = null;
-		//arrlist.remove(mid);
+
 		for (int i = 0; i < mid; i++) {
 			l = insert(l, arrlist.get(i), true);
 		}
@@ -649,65 +719,76 @@ public class WarehouseBook {
 		root = p;
 	}
 
-	/*
-		handle 4th event
-	 */
+    /**
+     * Handle event 4
+     * <p>Complex AVL restructure</p>
+     * <p>Format: 4</p>
+     * */
 	public void handle04() {
 		ArrayList<ProductRecord> arrlist = reversePreOrder(root);
 		while (root != null)
 			delete(root.getRecord());
 
-		for (int i = 0; i < arrlist.size(); i++)
-			insert(arrlist.get(i), true);
-
+        for (ProductRecord pr : arrlist) insert(pr, true);
 	}
 
-	/*
-		handle 5th event
-	 */
+	/**
+     * Handle event 5
+     * <p>Special import: set imported {@link WarehouseNode} to be root of current binary search tree with added quantity or create new {@link WarehouseNode} in case not found</p>
+     * <p>Format: 5XXXY</p>
+     * <ul>
+     *     <li><b>XXX</b> : {@link WarehouseNode} to be processed</li>
+     *     <li><b>Y</b> : Quantity to be update</li>
+     * </ul>
+     * */
 	public void handle05 (String s) {
-		ArrayList<ProductRecord> arrlist = reversePostOrder(root);
+		ArrayList<ProductRecord> records = reversePostOrder(root);
 
 		int id = Integer.parseInt(s.substring(1,4));
-		int quanity = Integer.parseInt(s.substring(4,s.length()));
-		ProductRecord pr = new ProductRecord(id, quanity);
+		int quantity = Integer.parseInt(s.substring(4,s.length()));
+		ProductRecord pr = new ProductRecord(id, quantity);
 
 		while (root != null)
 			delete(root.getRecord());
 
-		//System.out.println(arrlist);	//debug
-		root = setToRoot(pr, arrlist);
-		//System.out.println(arrlist);	//debug
+		root = setToRoot(pr, records);
 
-		for (int i = 0; i < arrlist.size(); i++)
-			insert(arrlist.get(i), false);
-			//arrlist.remove(i);
+        for (ProductRecord record : records) insert(record, false);
 
 	}
 
-	/*
-		handle 6th event
-	 */
-
+	/**
+     * Handle event 6
+     * <p>Remove all {@link WarehouseNode} whose depth is equal or greater than depth</p>
+     * <p>Format: 6Z</p>
+     * <ul>
+     *     <li><b>Z</b> : Depth to be deleted</li>
+     * </ul>
+     * */
 	public void handle06 (String s) {
 		int depth = Integer.parseInt(s.substring(1,s.length()));
 		if (depth == 0)
 			root = null;
 		else
 			delete01(depth);
-			//System.out.println(p.record.toString());
 	}
 
+	/**
+     * Override original toString() methods.
+     * <p>Tree deserialization utility</p>
+     * */
 	@Override
 	public String toString() {
-		//sinh vien viet ma tai day
-		//System.out.println(toString(root));		//debug
 		if (root == null)
 			return  "";
 		else
 			return toString(root);
 	}
 
+	/**
+     * Recursive function to print tree structure to defined format
+     * @param p Current iterating {@link WarehouseNode}
+     * */
 	private String toString(WarehouseNode p) {
 		String h = "";
 
@@ -725,30 +806,14 @@ public class WarehouseBook {
 			}
 		}
 
-
-
-		//System.out.println(h + " ) ");		//debug
 		return h;
-
 	}
 
 	public static void main(String[] args){
-		//vi du ham main de chay
 		try{
 			WarehouseBook wb = new WarehouseBook(new File("warehouse.txt"));
-			//wb.process(new File("events.txt"));
-			//System.out.print(wb.getDepth(wb.root.left.getRecord()));		//debug
-			//wb.handle06("63");		//debug
-			//System.out.println(wb.reversePostOrder(wb.root));	//debug
-			//wb.handle05("57191"); 		//debug
-			//System.out.println(wb.reversePreOrder(wb.root)); 	//debug
-			//wb.handle04();
-			//System.out.println(wb.inOrder(wb.root));	//debug
-			//wb.handle03();	//debug
-			//System.out.println("balance: " + wb.balanceFactor(wb.root));
+			wb.process(new File("events.txt"));
 			wb.save(new File("warehouse_new.txt"));
-
-			//System.out.println(wb.getHeight(wb.root)); 	//debug
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
