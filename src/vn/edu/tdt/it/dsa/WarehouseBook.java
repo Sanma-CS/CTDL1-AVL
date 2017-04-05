@@ -502,8 +502,11 @@ public class WarehouseBook {
 		WarehouseNode p = new WarehouseNode();
 		for (int i = 0; i < arr.size(); i++) {
 			if (arr.get(i).getProductID() == pr.getProductID()) {
-				if (pr.getQuantity() + arr.get(i).getQuantity() < 99)
-					pr.setQuantity(pr.getQuantity() + arr.get(i).getQuantity());
+				if (pr.getQuantity() + arr.get(i).getQuantity() > 99) {
+                    pr.setQuantity(99);
+                } else {
+                    pr.setQuantity(pr.getQuantity() + arr.get(i).getQuantity());
+                }
 				arr.remove(i);
 			}
 		}
