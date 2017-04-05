@@ -54,11 +54,29 @@ public class WarehouseBook {
 		return size;
 	}
 
-	@SuppressWarnings("unused")
-	public WarehouseBook(){
+	public WarehouseBook() {
 		root = null;
 		size = 0;
 	}
+
+    public WarehouseBook(String string) throws IOException {
+        string = string.replaceAll("\\s*[N]\\s*"," N ")
+                .replaceAll("\\s*[(]\\s*"," ( ").replaceAll("\\s*[)]\\s*"," ) ");
+
+        ArrayList<String> list = new ArrayList<>(Arrays.asList(string.split("\\s+")));
+        ArrayList<String> result = new ArrayList<>();
+
+        for (String item : list) {
+            if (item.length() <= 5) {
+                result.add(item);
+            } else if (item.length() == 10) {
+                result.add(item.substring(0,5));
+                result.add(item.substring(5,item.length()));
+            } else throw new IOException("Unknown input format");
+        }
+
+        root = buildBST(result);
+    }
 
 	/**
 	 * Deserialize binary search tree from file with given format
@@ -196,7 +214,7 @@ public class WarehouseBook {
      * @param productID {@link ProductRecord} to find with productID
      * @return WarehouseNode Search result, equals null if not found
      * */
-	private WarehouseNode search (int productID) {
+	public WarehouseNode search (int productID) {
 		return search(root, productID);
 	}
 
@@ -771,6 +789,10 @@ public class WarehouseBook {
 
 		return h;
 	}
+
+	public WarehouseNode getRoot() {
+        return root;
+    }
 
 	public static void main(String[] args){
 		try{

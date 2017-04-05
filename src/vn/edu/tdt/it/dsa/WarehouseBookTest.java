@@ -44,19 +44,18 @@ public class WarehouseBookTest {
         assertNull(wb.getRoot());
     }
 
-//    @org.junit.Test
+    @org.junit.Test
     public void handle03() throws Exception {
         for (int i = 0; i < 1000; i++) {
             wb.handle01("1"+String.format("%03d", (int) (Math.random() * 1000))+"1");
-//            wb.handle01("1"+String.format("%03d", i)+"1");
         }
         assertTrue("Not a BST", isBST());
         WarehouseBook wb_parent;
         for (int i = 0; i < 1000; i++) {
             wb_parent = new WarehouseBook(wb.toString());
             wb.handle03();
-            assertTrue(wb_parent.toString() + "===SPLIT===" + wb.toString(), isBalanced(wb));
-//            assertTrue("Failed at i = "+String.valueOf(i),isBalanced());
+//            assertTrue(wb_parent.toString() + "===SPLIT===" + wb.toString(), isBalanced(wb));
+            assertTrue("Failed at i = "+String.valueOf(i),isBalanced(wb));
         }
     }
 
@@ -69,8 +68,8 @@ public class WarehouseBookTest {
         for (int i = 0; i < 1000; i++) {
             wb_parent = new WarehouseBook(wb.toString());
             wb.handle04();
-            assertTrue(wb_parent.toString() + "===SPLIT===" + wb.toString(), isBalanced(wb));
-//            assertTrue("Failed at i = "+String.valueOf(i),isBalanced());
+//            assertTrue(wb_parent.toString() + "===SPLIT===" + wb.toString(), isBalanced(wb));
+            assertTrue("Failed at i = "+String.valueOf(i),isBalanced(wb));
         }
     }
 
